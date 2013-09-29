@@ -19,6 +19,7 @@
 @property (nonatomic, copy) NSNumber *runOnMainthread;
 @property (nonatomic, copy) NSNumber * runAsync;
 @property (nonatomic, strong) NSThread *thread;
+@property (nonatomic, assign) NSInteger priority;
 
 - (instancetype) initWithObserver:(id)anObserver name:(NSString*)aName object:(id)anObject;
 @end
@@ -215,9 +216,7 @@ static NJSNotificationCenter* notificationCenter = nil;
 }
 
 - (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject {
-    NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
-    NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
-    observers[key] = value;
+    [self addObserver:observer selector:aSelector name:aName object:anObject priority:0];
 }
 
 - (void) postNotification:(NSNotification *)notification {
@@ -261,22 +260,44 @@ static NJSNotificationCenter* notificationCenter = nil;
 
 #pragma mark - NJSNotificationCenter extra interface
 
-- (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+- (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject priority:(NSInteger)priority {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
+    key.priority = priority;
+    NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
+    observers[key] = value;
+}
+
+- (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+    [self addObserver:observer selector:aSelector name:aName object:anObject async:async priority:0];
+}
+
+- (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority {
+    NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
+    key.priority = priority;
     key.runAsync = @(async);
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
     observers[key] = value;
 }
 
-- (void) addObserver:(id)observer block:(void (^)())block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+- (void) addObserver:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+    [self addObserver:observer block:block name:aName object:anObject async:async priority:0];
+}
+
+- (void) addObserver:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
+    key.priority = priority;
     key.runAsync = @(async);
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithBlock:block];
     observers[key] = value;
 }
 
-- (void) addObserverToMainThread:(id)observer block:(void (^)())block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+- (void) addObserverToMainThread:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+    [self addObserverToMainThread:observer block:block name:aName object:anObject async:async priority:0];
+}
+
+- (void) addObserverToMainThread:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
+    key.priority = priority;
     key.runAsync = @(async);
     key.runOnMainthread = @YES;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithBlock:block];
@@ -284,24 +305,38 @@ static NJSNotificationCenter* notificationCenter = nil;
 }
 
 - (void) addObserverToMainThread:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+    [self addObserverToMainThread:observer selector:aSelector name:aName object:anObject async:async priority:0];
+}
+
+- (void) addObserverToMainThread:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
+    key.priority = priority;
     key.runAsync = @(async);
     key.runOnMainthread = @YES;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
     observers[key] = value;
 }
 
-
 - (void) addObserver:(id)observer toThread:(NSThread*)thread selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+    [self addObserver:observer toThread:thread selector:aSelector name:aName object:anObject async:async priority:0];
+}
+
+- (void) addObserver:(id)observer toThread:(NSThread*)thread selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
+    key.priority = priority;
     key.runAsync = @(async);
     key.thread = thread;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
     observers[key] = value;
 }
 
-- (void) addObserver:(id)observer toThread:(NSThread*)thread block:(void (^)())block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+- (void) addObserver:(id)observer toThread:(NSThread*)thread block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
+    [self addObserver:observer toThread:thread block:block name:aName object:anObject async:async priority:0];
+}
+
+- (void) addObserver:(id)observer toThread:(NSThread*)thread block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
+    key.priority = priority;
     key.runAsync = @(async);
     key.thread = thread;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithBlock:block];

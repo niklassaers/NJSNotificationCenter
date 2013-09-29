@@ -31,16 +31,26 @@
 #pragma mark NJSNotificationCenter extra interface
 
 - (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async;
-- (void) addObserver:(id)observer block:(void (^)())block name:(NSString *)aName object:(id)anObject async:(BOOL)async;
-- (void) addObserverToMainThread:(id)observer block:(void (^)())block name:(NSString *)aName object:(id)anObject async:(BOOL)async;
+- (void) addObserver:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async;
+- (void) addObserverToMainThread:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async;
 - (void) addObserverToMainThread:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async;
 - (void) addObserver:(id)observer toThread:(NSThread*)thread selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async;
-- (void) addObserver:(id)observer toThread:(NSThread*)thread block:(void (^)())block name:(NSString *)aName object:(id)anObject async:(BOOL)async;
+- (void) addObserver:(id)observer toThread:(NSThread*)thread block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async;
 
 - (void) postNotification:(NSNotification *)notification async:(BOOL)async;
 - (void) postNotificationName:(NSString *)aName object:(id)anObject async:(BOOL)async;
 - (void) postNotificationName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo async:(BOOL)async;
 
 - (NSArray*) listObservers;
+
+- (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject priority:(NSInteger) priority;
+- (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority;
+- (void) addObserver:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority;
+- (void) addObserverToMainThread:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority;
+- (void) addObserverToMainThread:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority;
+- (void) addObserver:(id)observer toThread:(NSThread*)thread selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority;
+- (void) addObserver:(id)observer toThread:(NSThread*)thread block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async priority:(NSInteger) priority;
+
+
 
 @end
