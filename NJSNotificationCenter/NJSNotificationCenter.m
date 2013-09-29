@@ -221,7 +221,7 @@ static NJSNotificationCenter* notificationCenter = nil;
 
 - (void) postNotification:(NSNotification *)notification {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:nil name:notification.name object:notification.object];
-    NSArray *keys = [observers keysForKey:key];
+    NSArray *keys = [[observers keysForKey:key] sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"priority" ascending:YES] ]];
     for(NJSNotificationKey *fullKey in keys) {
         NSArray *singleValue = [observers valuesForKey:key];
         NSAssert(singleValue.count == 1, @"Is single value");
