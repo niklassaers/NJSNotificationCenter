@@ -13,17 +13,22 @@
 
 @end
 
-@implementation NJSNotificationCenterTests
+@implementation NJSNotificationCenterTests {
+    NJSNotificationCenter *nc;
+}
 
 - (void)setUp
 {
     [super setUp];
-    // Put setup code here. This method is called before the invocation of each test method in the class.
+
+    nc = [NJSNotificationCenter defaultCenter];
+
 }
 
 - (void)tearDown
 {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
+    XCTAssertTrue([[nc listObservers] count] == 0, @"At end of test, all observers should be removed");
+    
     [super tearDown];
 }
 
@@ -34,9 +39,10 @@
 - (void)testExample
 {
     NSString *testNotification = @"TESTNOTIFICATION";
-    NJSNotificationCenter *nc = [NJSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(completeTest:) name:testNotification object:@3];
     [nc postNotificationName:testNotification object:@3];
+    NSLog(@"%@", [nc listObservers]);
+    [nc removeObserver:self];
 }
 
 @end

@@ -247,7 +247,7 @@ static NJSNotificationCenter* notificationCenter = nil;
 
 - (void) removeObserver:(id)observer name:(NSString *)aName object:(id)anObject {
     NJSNotificationKey *inKey = [[NJSNotificationKey alloc] initWithObserver:observer name:nil object:nil];
-    NSArray *keys = [observer keysForKey:inKey];
+    NSArray *keys = [observers keysForKey:inKey];
     for(NJSNotificationKey *key in keys) {
         [observers removeObjectForKey:key];
     }
@@ -322,6 +322,14 @@ static NJSNotificationCenter* notificationCenter = nil;
 - (void) postNotificationName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo async:(BOOL)async {
     NSNotification *notification = [NSNotification notificationWithName:aName object:anObject userInfo:aUserInfo];
     [self postNotification:notification async:async];
+}
+
+- (NSArray*) listObservers {
+    NSMutableArray *list = [[NSMutableArray alloc] initWithCapacity:observers.count];
+    for(NJSNotificationKey *key in observers.allKeys) {
+        [list addObject:[NSString stringWithFormat:@"Observer: %p\tNotification: %@\tObject:%p", key.observer, key.name, key.object]];
+    }
+    return list;
 }
 
 @end

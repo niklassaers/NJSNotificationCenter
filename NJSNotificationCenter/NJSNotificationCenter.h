@@ -41,5 +41,6 @@
 - (void) postNotificationName:(NSString *)aName object:(id)anObject async:(BOOL)async;
 - (void) postNotificationName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo async:(BOOL)async;
 
+- (NSArray*) listObservers;
 
 @end
