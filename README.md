@@ -18,7 +18,7 @@ NJSNotificationCenter was written with iOS 7 in mind. No work has yet been done 
 
 ### To do:
 
-- - (id) addObserverForName:(NSString *)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification *note))block;"
+- - (id) addObserverForName:(NSString *)name object:(id)obj queue:(NSOperationQueue *)queue usingBlock:(void (^)(NSNotification *note))block;
 - More tests to make sure it replaces NSNotificationCenter completely
 - Speed tests. I'm sure speed can be improved
 
