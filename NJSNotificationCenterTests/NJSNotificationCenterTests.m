@@ -3,7 +3,7 @@
 //  NJSNotificationCenterTests
 //
 //  Created by Niklas Saers on 9/29/13.
-//  Copyright (c) 2013 Niklas Saers. All rights reserved.
+//  Copyright (c) 2013 Niklas Saers. See License file for details.
 //
 
 #import <XCTest/XCTest.h>
