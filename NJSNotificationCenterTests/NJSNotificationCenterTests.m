@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "NJSNotificationCenter.h"
 
 @interface NJSNotificationCenterTests : XCTestCase
 
@@ -26,9 +27,16 @@
     [super tearDown];
 }
 
+- (void) completeTest:(NSNotification*) notification {
+    NSLog(@"Notification was %p", notification);
+}
+
 - (void)testExample
 {
-    XCTFail(@"No implementation for \"%s\"", __PRETTY_FUNCTION__);
+    NSString *testNotification = @"TESTNOTIFICATION";
+    NJSNotificationCenter *nc = [NJSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(completeTest:) name:testNotification object:@3];
+    [nc postNotificationName:testNotification object:@3];
 }
 
 @end
