@@ -155,7 +155,6 @@
 - (NSArray*) keysForKey:(NJSNotificationKey*) inKey {
     NSMutableArray *returnArray = [[NSMutableArray alloc] init];
     for(NJSNotificationKey *key in self.allKeys) {
-        NSLog(@"%@", [NSString stringWithFormat:@"Key is of class %@, should be of class %@", [key class], [NJSNotificationKey class]]);
         if([key class] != [NJSNotificationKey class]) continue; // Only operate on keys of type NJSNotificationKey
         if(inKey.observer != nil && inKey.observer != key.observer) continue;
         if(inKey.object != nil && inKey.object != key.object) continue;
