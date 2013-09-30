@@ -15,6 +15,8 @@
 
 @implementation NJSNotificationCenterTests {
     NJSNotificationCenter *nc;
+    
+    NSNumber *testResult;
 }
 
 - (void)setUp
@@ -22,6 +24,7 @@
     [super setUp];
 
     nc = [NJSNotificationCenter defaultCenter];
+    testResult = nil;
 
 }
 
@@ -33,15 +36,45 @@
 }
 
 - (void) completeTest:(NSNotification*) notification {
-    NSLog(@"Notification was %p", notification);
+    XCTAssertNotNil(notification, @"The notification received should not be nil");
+    
+    testResult = @1;
 }
 
-- (void)testExample
+- (void) expect:(BOOL (^)())whileTest assert:(void (^)())assertTest before:(NSInteger) seconds {
+    
+    BOOL stop = NO;
+    NSDate *until = [NSDate dateWithTimeIntervalSinceNow:seconds];
+    while ([until timeIntervalSinceNow] > 0 && !stop)
+    {
+        NSDate *deltaUntil = [NSDate dateWithTimeIntervalSinceNow:1.f/10];
+        
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:deltaUntil];
+        
+        if(whileTest != nil)
+            stop = whileTest();
+    }
+    
+    XCTAssertTrue(stop, @"Should have been stopped within X seconds");
+    
+    if(assertTest)
+        assertTest();
+}
+
+- (void)testNotificationWorksLikeItUsedTo
 {
     NSString *testNotification = @"TESTNOTIFICATION";
     [nc addObserver:self selector:@selector(completeTest:) name:testNotification object:@3];
     [nc postNotificationName:testNotification object:@3];
-    NSLog(@"%@", [nc listObservers]);
+
+    [self expect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertEqualObjects(@1, testResult, @"Test result from the notification should be 1");
+    } before:5];
+
+
     [nc removeObserver:self];
 }
 
