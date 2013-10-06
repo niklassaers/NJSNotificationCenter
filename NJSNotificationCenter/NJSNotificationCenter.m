@@ -233,9 +233,16 @@ static NJSNotificationCenter* notificationCenter = nil;
 
 - (void) postNotification:(NSNotification *)notification {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:nil name:notification.name object:notification.object];
-    NSArray *keys = [[observers keysForKey:key] sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"priority" ascending:YES] ]];
+    NSArray *keys;
+    @synchronized(observers) {
+        keys = [[observers keysForKey:key] sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"priority" ascending:YES] ]];
+    }
+    
     for(NJSNotificationKey *fullKey in keys) {
-        NSArray *singleValue = [observers valuesForKey:key];
+        NSArray *singleValue;
+        @synchronized(observers) {
+            singleValue = [observers valuesForKey:key];
+        }
         NSAssert(singleValue.count == 1, @"Is single value");
         [singleValue[0] performForKey:fullKey notification:notification];
     }
@@ -258,9 +265,12 @@ static NJSNotificationCenter* notificationCenter = nil;
 
 - (void) removeObserver:(id)observer name:(NSString *)aName object:(id)anObject {
     NJSNotificationKey *inKey = [[NJSNotificationKey alloc] initWithObserver:observer name:nil object:nil];
-    NSArray *keys = [observers keysForKey:inKey];
-    for(NJSNotificationKey *key in keys) {
-        [observers removeObjectForKey:key];
+    NSArray *keys;
+    @synchronized(observers) {
+        keys = [observers keysForKey:inKey];
+        for(NJSNotificationKey *key in keys) {
+            [observers removeObjectForKey:key];
+        }
     }
     
 }
@@ -297,7 +307,9 @@ static NJSNotificationCenter* notificationCenter = nil;
     key.priority = priority;
     key.runAsync = @(async);
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
-    observers[key] = value;
+    @synchronized(observers) {
+        observers[key] = value;
+    }
 }
 
 - (void) addObserver:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
@@ -309,7 +321,9 @@ static NJSNotificationCenter* notificationCenter = nil;
     key.priority = priority;
     key.runAsync = @(async);
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithBlock:block];
-    observers[key] = value;
+    @synchronized(observers) {
+        observers[key] = value;
+    }
 }
 
 - (void) addObserverToMainThread:(id)observer block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
@@ -322,7 +336,9 @@ static NJSNotificationCenter* notificationCenter = nil;
     key.runAsync = @(async);
     key.runOnMainthread = @YES;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithBlock:block];
-    observers[key] = value;
+    @synchronized(observers) {
+        observers[key] = value;
+    }
 }
 
 - (void) addObserverToMainThread:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async {
@@ -335,7 +351,9 @@ static NJSNotificationCenter* notificationCenter = nil;
     key.runAsync = @(async);
     key.runOnMainthread = @YES;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
-    observers[key] = value;
+    @synchronized(observers) {
+        observers[key] = value;
+    }
 }
 
 - (void) addObserver:(id)observer toThread:(NSThread*)thread selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async {
@@ -348,7 +366,9 @@ static NJSNotificationCenter* notificationCenter = nil;
     key.runAsync = @(async);
     key.thread = thread;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
-    observers[key] = value;
+    @synchronized(observers) {
+        observers[key] = value;
+    }
 }
 
 - (void) addObserver:(id)observer toThread:(NSThread*)thread block:(void (^)(NSNotification*))block name:(NSString *)aName object:(id)anObject async:(BOOL)async {
@@ -361,7 +381,9 @@ static NJSNotificationCenter* notificationCenter = nil;
     key.runAsync = @(async);
     key.thread = thread;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithBlock:block];
-    observers[key] = value;
+    @synchronized(observers) {
+            observers[key] = value;
+    }
 }
 
 - (void) postNotification:(NSNotification *)notification async:(BOOL)async {
@@ -381,9 +403,12 @@ static NJSNotificationCenter* notificationCenter = nil;
 }
 
 - (NSArray*) listObservers {
-    NSMutableArray *list = [[NSMutableArray alloc] initWithCapacity:observers.count];
-    for(NJSNotificationKey *key in observers.allKeys) {
-        [list addObject:[NSString stringWithFormat:@"Observer: %p\tNotification: %@\tObject:%p", key.observer, key.name, key.object]];
+    NSMutableArray *list;
+    @synchronized(observers) {
+        list = [[NSMutableArray alloc] initWithCapacity:observers.count];
+        for(NJSNotificationKey *key in observers.allKeys) {
+            [list addObject:[NSString stringWithFormat:@"Observer: %p\tNotification: %@\tObject:%p", key.observer, key.name, key.object]];
+        }
     }
     return list;
 }
