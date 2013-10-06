@@ -78,4 +78,26 @@
     [nc removeObserver:self];
 }
 
+- (void)testNotificationAsync
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    
+    [nc addObserver:self block:^(NSNotification *notification) {
+        XCTAssertEqualObjects(@2, (NSNumber*) notification.userInfo[@"test"], @"Notification test value for notification should be 2");
+        testResult = @2;
+    } name:testNotification object:@3 async:YES priority:10];
+
+    [nc postNotificationName:testNotification object:@3 userInfo:@{ @"test": @2 } async:YES];
+    
+    [self expect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertEqualObjects(@2, testResult, @"Test result from the notification should be 2");
+    } before:5];
+    
+    
+    [nc removeObserver:self];
+}
+
+
 @end

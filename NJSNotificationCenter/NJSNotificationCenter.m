@@ -22,6 +22,7 @@
 @property (nonatomic, assign) NSInteger priority;
 
 - (instancetype) initWithObserver:(id)anObserver name:(NSString*)aName object:(id)anObject;
+
 @end
 
 @implementation NJSNotificationKey
@@ -71,6 +72,9 @@
 
 - (instancetype) initWithSelector:(SEL) aSelector {
     self = [super init];
+#warning REMOVEME
+    if(self == nil)
+        NSLog(@"Whoops?");
     if(self != nil) {
         self.selector = aSelector;
     }
@@ -124,8 +128,11 @@
         
         
     } else { // Selector based
-        SEL selector = self.selector;
+#pragma clang push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         
+        SEL selector = self.selector;
+
         if(key.thread != nil)
             [key.observer performSelector:selector onThread:key.thread withObject:notification waitUntilDone:NO];
         else if(key.runOnMainthread != nil && [key.runOnMainthread boolValue] == YES) {
@@ -142,6 +149,7 @@
             [key.observer performSelector:selector withObject:notification];
         }
     }
+#pragma clang pop
 }
 
 @end
@@ -171,7 +179,12 @@
     NSMutableArray *returnArray = [[NSMutableArray alloc] init];
     NSArray *keys = [self keysForKey:inKey];
     for(NJSNotificationKey *key in keys) {
-        [returnArray addObject:self[key]]; // Key matched, fetch value
+        NJSNotificationValue *val = self[key];
+#warning REMOVEME
+        if(val == nil)
+            NSLog(@"Breakpoint here!");
+        NSAssert(val, @"Value should not be nil!");
+        [returnArray addObject:val];
     }
     
     return returnArray;
@@ -261,9 +274,18 @@ static NJSNotificationCenter* notificationCenter = nil;
 
 - (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject priority:(NSInteger)priority {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
+    NSLog(@"Key is: %p", key);
     key.priority = priority;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
-    observers[key] = value;
+    NSAssert(value, @"Value cannot be nil!");
+    @synchronized(observers) {
+        observers[key] = value;
+#warning REMOVEME
+    NSLog(@"Key: %p\tValue: %p\t%@", key, value, observers);
+#warning REMOVEME
+    if(observers[key] == nil)
+        NSLog(@"This can't be!");
+    }
 }
 
 - (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject async:(BOOL)async {
