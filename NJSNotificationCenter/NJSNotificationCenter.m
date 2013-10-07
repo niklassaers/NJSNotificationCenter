@@ -36,6 +36,14 @@
     return self;
 }
 
+- (NSUInteger) hash {
+    return [self.description hash];
+}
+
+- (NSString*) description {
+    return [NSString stringWithFormat:@"%@ %@ %@", self.observer, self.name, self.object];
+}
+
 - (id)copyWithZone:(NSZone *)zone {
     NJSNotificationKey *copy = [[NJSNotificationKey alloc] initWithObserver:self.observer name:self.name object:self.object];
     return copy;
@@ -179,7 +187,7 @@
     NSMutableArray *returnArray = [[NSMutableArray alloc] init];
     NSArray *keys = [self keysForKey:inKey];
     for(NJSNotificationKey *key in keys) {
-        NJSNotificationValue *val = self[key];
+        NJSNotificationValue *val = [self objectForKey:key];
 #warning REMOVEME
         if(val == nil)
             NSLog(@"Breakpoint here!");
@@ -289,12 +297,13 @@ static NJSNotificationCenter* notificationCenter = nil;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
     NSAssert(value, @"Value cannot be nil!");
     @synchronized(observers) {
-        observers[key] = value;
+        [observers setObject:value forKey:key];
+//        observers[key] = value;
 #warning REMOVEME
-    NSLog(@"Key: %p\tValue: %p\t%@", key, value, observers);
+        NSLog(@"Key: %p\tValue: %p\t%@", key, value, observers);
 #warning REMOVEME
-    if(observers[key] == nil)
-        NSLog(@"This can't be!");
+        if(observers[key] == nil)
+            NSLog(@"This can't be!");
     }
 }
 
