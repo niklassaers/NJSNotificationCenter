@@ -83,6 +83,7 @@
         assertTest();
 }
 
+#pragma mark - Synchronous tests
 - (void)testNotificationWorksLikeItUsedTo
 {
     NSString *testNotification = @"TESTNOTIFICATION";
@@ -119,6 +120,7 @@
     [nc removeObserver:self];
 }
 
+// Very similar to "-(void)testNotificationsWithBlocks", but listens to a different object than the one that subscribes to the notification
 - (void) testNotificationsWithBlocks_doesNotReachObjectsNotListenedFor
 {
     NSString *testNotification = @"TESTNOTIFICATION";
@@ -138,7 +140,49 @@
     [nc removeObserver:self];
 }
 
-- (void)testNotificationAsync
+- (void) testNotificationsWithBlocks_observerWithoutObject_notificationWithObject
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    [nc addObserver:self block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        
+        testResult = @9;
+    } name:testNotification object:nil async:NO];
+    [nc postNotificationName:testNotification object:@10];
+    
+    [self dontExpect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertNotEqualObjects(@9, testResult, @"Test result from the notification should be 9");
+    } before:5];
+    
+    
+    [nc removeObserver:self];
+}
+
+- (void) testNotificationsWithBlocks_observerWithObject_notificationWithoutObject
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    [nc addObserver:self block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        
+        testResult = @11;
+    } name:testNotification object:@12 async:NO];
+    [nc postNotificationName:testNotification object:nil];
+    
+    [self expect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertEqualObjects(@11, testResult, @"Test result from the notification should be 11");
+    } before:5];
+    
+    
+    [nc removeObserver:self];
+}
+
+
+#pragma mark - Async tests
+- (void)testNotificationsWithBlocks_async
 {
     NSString *testNotification = @"TESTNOTIFICATION";
     static const NSString *testNotificationKey = @"test";
@@ -165,6 +209,81 @@
     [nc removeObserver:self];
 }
 
+- (void)testNotificationWorksLikeItUsedTo_async
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    [nc addObserver:self selector:@selector(completeTest:) name:testNotification object:@12];
+    [nc postNotificationName:testNotification object:@12 async:YES];
+    
+    [self expect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertEqualObjects(@1, testResult, @"Test result from the notification should be 1");
+    } before:5];
+    
+    
+    [nc removeObserver:self];
+}
+
+// Very similar to "-(void)testNotificationsWithBlocks_async", but listens to a different object than the one that subscribes to the notification
+- (void) testNotificationsWithBlocks_doesNotReachObjectsNotListenedFor_async
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    [nc addObserver:self block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        
+        testResult = @13;
+    } name:testNotification object:@14 async:YES];
+    [nc postNotificationName:testNotification object:@15];
+    
+    [self dontExpect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertNotEqualObjects(@14, testResult, @"Test result from the notification should NOT be 14");
+    } before:5];
+    
+    [nc removeObserver:self];
+}
+
+- (void) testNotificationsWithBlocks_observerWithoutObject_notificationWithObject_async
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    [nc addObserver:self block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        
+        testResult = @16;
+    } name:testNotification object:nil async:YES];
+    [nc postNotificationName:testNotification object:@17];
+    
+    [self dontExpect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertNotEqualObjects(@16, testResult, @"Test result from the notification should be 16");
+    } before:5];
+    
+    
+    [nc removeObserver:self];
+}
+
+- (void) testNotificationsWithBlocks_observerWithObject_notificationWithoutObject_async
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    [nc addObserver:self block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        
+        testResult = @18;
+    } name:testNotification object:@19 async:YES];
+    [nc postNotificationName:testNotification object:nil];
+    
+    [self expect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertEqualObjects(@18, testResult, @"Test result from the notification should be 18");
+    } before:5];
+    
+    
+    [nc removeObserver:self];
+}
 
 
 @end
