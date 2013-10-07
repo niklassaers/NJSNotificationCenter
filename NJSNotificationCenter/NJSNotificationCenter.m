@@ -49,6 +49,10 @@
 
 - (id)copyWithZone:(NSZone *)zone {
     NJSNotificationKey *copy = [[NJSNotificationKey alloc] initWithObserver:self.observer name:self.name object:self.object];
+    copy.runOnMainthread = self.runOnMainthread;
+    copy.runAsync = self.runAsync;
+    copy.thread = self.thread;
+    copy.priority = self.priority;
     return copy;
 }
 
@@ -246,7 +250,7 @@ static NJSNotificationCenter* notificationCenter = nil;
     for(NJSNotificationKey *fullKey in keys) {
         NSArray *singleValue;
         @synchronized(_observers) {
-            singleValue = [_observers valuesForKey:key];
+            singleValue = [_observers valuesForKey:fullKey];
         }
         NSAssert(singleValue.count == 1, @"Is single value");
         [singleValue[0] performForKey:fullKey notification:notification];

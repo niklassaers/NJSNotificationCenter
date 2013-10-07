@@ -180,6 +180,40 @@
     [_nc removeObserver:self];
 }
 
+- (void) testNotificationsWithBlocks_ordered
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    NSString *o1 = @"Observer #1", *o2 = @"Observer #2", *o3 = @"Observer #3";
+    [_nc addObserver:o1 block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        XCTAssertNil(_testResult, @"_testResult should be nil at this point");
+        _testResult = @19;
+    } name:testNotification object:@22 async:NO priority:0];
+    
+    [_nc addObserver:o2 block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        XCTAssertEqualObjects(@19, _testResult, @"_testResult should be 19, thus following priority 0");
+        _testResult = @20;
+    } name:testNotification object:@23 async:NO priority:10];
+    [_nc addObserver:o3 block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        XCTAssertEqualObjects(@20, _testResult, @"_testResult should be 20, thus following priority 10");
+        _testResult = @21;
+    } name:testNotification object:@24 async:NO priority:20];
+    [_nc postNotificationName:testNotification object:nil];
+    
+    [self expect:^BOOL{
+        return _testResult != nil && [_testResult isEqual:@21];
+    } assert:^{
+        XCTAssertEqualObjects(@21, _testResult, @"Test result from the notification should be 21");
+    } before:5];
+    
+    
+    [_nc removeObserver:o1];
+    [_nc removeObserver:o2];
+    [_nc removeObserver:o3];
+}
+
 
 #pragma mark - Async tests
 - (void)testNotificationsWithBlocks_async
