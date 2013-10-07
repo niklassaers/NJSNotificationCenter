@@ -44,7 +44,7 @@
 }
 
 - (NSString*) description {
-    return [NSString stringWithFormat:@"%@ %@ %@", self.observer, self.name, self.object];
+    return [NSString stringWithFormat:@"%p %@ %p", self.observer, self.name, self.object];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -83,9 +83,6 @@
 
 - (instancetype) initWithSelector:(SEL) aSelector {
     self = [super init];
-#warning REMOVEME
-    if(self == nil)
-        NSLog(@"Whoops?");
     if(self != nil) {
         self.selector = aSelector;
     }
@@ -191,9 +188,6 @@
     NSArray *keys = [self keysForKey:inKey];
     for(NJSNotificationKey *key in keys) {
         NJSNotificationValue *val = [self objectForKey:key];
-#warning REMOVEME
-        if(val == nil)
-            NSLog(@"Breakpoint here!");
         NSAssert(val, @"Value should not be nil!");
         [returnArray addObject:val];
     }
@@ -295,18 +289,11 @@ static NJSNotificationCenter* notificationCenter = nil;
 
 - (void) addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject priority:(NSInteger)priority {
     NJSNotificationKey *key = [[NJSNotificationKey alloc] initWithObserver:observer name:aName object:anObject];
-    NSLog(@"Key is: %p", key);
     key.priority = priority;
     NJSNotificationValue *value = [[NJSNotificationValue alloc] initWithSelector:aSelector];
     NSAssert(value, @"Value cannot be nil!");
     @synchronized(observers) {
-        [observers setObject:value forKey:key];
-//        observers[key] = value;
-#warning REMOVEME
-        NSLog(@"Key: %p\tValue: %p\t%@", key, value, observers);
-#warning REMOVEME
-        if(observers[key] == nil)
-            NSLog(@"This can't be!");
+        observers[key] = value;
     }
 }
 

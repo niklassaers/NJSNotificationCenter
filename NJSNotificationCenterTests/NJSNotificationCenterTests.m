@@ -41,6 +41,27 @@
     testResult = @1;
 }
 
+- (void) dontExpect:(BOOL (^)())whileTest assert:(void (^)())assertTest before:(NSInteger) seconds {
+    
+    BOOL stop = NO;
+    NSDate *until = [NSDate dateWithTimeIntervalSinceNow:seconds];
+    while ([until timeIntervalSinceNow] > 0 && !stop)
+    {
+        NSDate *deltaUntil = [NSDate dateWithTimeIntervalSinceNow:1.f/10];
+        
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:deltaUntil];
+        
+        if(whileTest != nil)
+            stop = whileTest();
+    }
+    
+    XCTAssertFalse(stop, @"Should not have succeeded for X seconds");
+    
+    if(assertTest)
+        assertTest();
+}
+
 - (void) expect:(BOOL (^)())whileTest assert:(void (^)())assertTest before:(NSInteger) seconds {
     
     BOOL stop = NO;
@@ -78,16 +99,61 @@
     [nc removeObserver:self];
 }
 
+- (void) testNotificationsWithBlocks
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    [nc addObserver:self block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        
+        testResult = @4;
+    } name:testNotification object:@5 async:NO];
+    [nc postNotificationName:testNotification object:@5];
+    
+    [self expect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertEqualObjects(@4, testResult, @"Test result from the notification should be 3");
+    } before:5];
+    
+    
+    [nc removeObserver:self];
+}
+
+- (void) testNotificationsWithBlocks_doesNotReachObjectsNotListenedFor
+{
+    NSString *testNotification = @"TESTNOTIFICATION";
+    [nc addObserver:self block:^(NSNotification *notification) {
+        XCTAssertNotNil(notification, @"The notification received should not be nil"); // How does this capture self?
+        
+        testResult = @6;
+    } name:testNotification object:@7 async:NO];
+    [nc postNotificationName:testNotification object:@8];
+    
+    [self dontExpect:^BOOL{
+        return testResult != nil;
+    } assert:^{
+        XCTAssertNotEqualObjects(@7, testResult, @"Test result from the notification should NOT be 7");
+    } before:5];
+    
+    [nc removeObserver:self];
+}
+
 - (void)testNotificationAsync
 {
     NSString *testNotification = @"TESTNOTIFICATION";
+    static const NSString *testNotificationKey = @"test";
     
+    __weak NJSNotificationCenterTests *weakSelf = self;
     [nc addObserver:self block:^(NSNotification *notification) {
-        XCTAssertEqualObjects(@2, (NSNumber*) notification.userInfo[@"test"], @"Notification test value for notification should be 2");
-        testResult = @2;
+        __strong NJSNotificationCenterTests *strongSelf = weakSelf;
+        if(strongSelf != nil) {
+            NSDictionary *userInfo = notification.userInfo;
+            XCTAssertEqualObjects(@2, (NSNumber*) userInfo[testNotificationKey], @"Notification test value for notification should be 2"); // I really can't spot the capturing of self here
+            strongSelf->testResult = @2;
+        }
     } name:testNotification object:@3 async:YES priority:10];
 
-    [nc postNotificationName:testNotification object:@3 userInfo:@{ @"test": @2 } async:YES];
+    [nc postNotificationName:testNotification object:@3 userInfo:@{ testNotificationKey: @2 } async:YES];
     
     [self expect:^BOOL{
         return testResult != nil;
@@ -98,6 +164,7 @@
     
     [nc removeObserver:self];
 }
+
 
 
 @end
