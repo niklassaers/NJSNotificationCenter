@@ -36,6 +36,9 @@
     return self;
 }
 
+/**
+ * Credit to Jeff Laing - http://stackoverflow.com/questions/19213506/nsmutabledictionary-with-nil-as-value
+ */
 - (NSUInteger) hash {
     return [self.description hash];
 }
