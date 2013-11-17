@@ -1,16 +1,17 @@
 Pod::Spec.new do |s|
 
   s.name         = "NJSNotificationCenter"
-  s.version      = "0.0.1"
+  s.version      = "1.0.0"
   s.summary      = "An NSNotificationCenter replacement reducing boilerplate around threads and execution ordering"
 
   s.description  = <<-DESC
-                   A longer description of NJSNotificationCenter in Markdown format.
-
-                   * Think: Why did you write this? What is the focus? What does it do?
-                   * CocoaPods will be using this to generate tags, and improve search results.
-                   * Try to keep it short, snappy and to the point.
-                   * Finally, don't worry about the indent, CocoaPods strips it!
+									 This is a notification center that takes out some of the boiler-plate
+									 code of handling notifications, such as
+									 - handling it asynchronously
+									 - handling what threads a notification is handled on
+									 - handle notifications using blocks
+									 - ordering of notifications
+									 - finding out what observers are left
                    DESC
 
   s.homepage     = "https://github.com/niklassaers/NJSNotificationCenter"
@@ -27,8 +28,6 @@ Pod::Spec.new do |s|
 
 
   s.source_files  = 'NJSNotificationCenter/*.{h,m}'
-
-  # s.public_header_files = 'NJSNotificationCenter/*.h'
 
   s.requires_arc = true
 
