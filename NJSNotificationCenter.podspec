@@ -1,17 +1,17 @@
 Pod::Spec.new do |s|
 
   s.name         = "NJSNotificationCenter"
-  s.version      = "1.0.0"
+  s.version      = "1.0"
   s.summary      = "An NSNotificationCenter replacement reducing boilerplate around threads and execution ordering"
 
   s.description  = <<-DESC
-									 This is a notification center that takes out some of the boiler-plate
-									 code of handling notifications, such as
-									 - handling it asynchronously
-									 - handling what threads a notification is handled on
-									 - handle notifications using blocks
-									 - ordering of notifications
-									 - finding out what observers are left
+                   NJSNotificationCenter replaces NSNotificationCenter and takes out some of the boiler-plate
+                   code of handling notifications, such as
+                   - handling it asynchronously
+                   - handling what threads a notification is handled on
+                   - handle notifications using blocks
+                   - ordering of notifications
+                   - finding out what observers are left
                    DESC
 
   s.homepage     = "https://github.com/niklassaers/NJSNotificationCenter"
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
 
   s.platform     = :ios, '7.0'
 
-  s.source       = { :git => "https://github.com/niklassaers/NJSNotificationCenter.git", :commit => "a002f651ba0366d98b375bef8b5a27dc5c9fece0" }
+  s.source       = { :git => "https://github.com/niklassaers/NJSNotificationCenter.git", :tag => 'v1.0' }
 
 
   s.source_files  = 'NJSNotificationCenter/*.{h,m}'
